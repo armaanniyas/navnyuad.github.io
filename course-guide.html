@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NavNYUAD</title>
+
+  <style>
+    /* General Styles */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      height: 100vh;
+    }
+
+    /* Split Screen Container */
+    .split-container {
+      display: flex;
+      width: 100%;
+    }
+
+    /* Left Section (Course Selection) */
+    .left-section {
+      flex: 1;
+      background-color: #f0f0f0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+    }
+
+    /* Right Section (Study Plan) */
+    .right-section {
+      flex: 1;
+      background-color: #fff;
+      padding: 20px;
+      border-left: 2px solid #007bff; /* Dividing Line */
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+    }
+
+    /* Header Styles */
+    header {
+      font-size: 2.5rem;
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    /* Question Section */
+    .question {
+      font-size: 1.5rem;
+      color: #444;
+      margin-bottom: 30px;
+      text-align: center;
+    }
+
+    /* Box Container */
+    .box-container {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+
+    /* Box Styles */
+    .box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 150px;
+      height: 150px;
+      background-color: #fff;
+      border: 2px solid #007bff;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: box-shadow 0.3s ease;
+    }
+
+    .box:hover {
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Dropdown Styles */
+    select {
+      margin-top: 10px;
+      width: 120px;
+      padding: 5px;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    /* Submit Button */
+    button {
+      padding: 10px 20px;
+      font-size: 1rem;
+      color: #fff;
+      background-color: #007bff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      margin-bottom: 20px;
+    }
+
+    button:disabled {
+      background-color: #aaa;
+      cursor: not-allowed;
+    }
+
+    button:hover:not(:disabled) {
+      background-color: #0056b3;
+    }
+
+    /* Available Courses Section */
+    .available-courses {
+      margin-top: 20px;
+      padding: 20px;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      background-color: #fff;
+      width: 80%;
+      max-width: 400px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .available-courses h3 {
+      margin-bottom: 10px;
+      color: #007bff;
+    }
+
+    .available-courses ul {
+      padding-left: 20px;
+    }
+
+    /* Right Section Boxes */
+    .term-container {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      gap: 20px;
+      text-align: center;
+    }
+
+    .term-header {
+      text-align: center;
+      width: 100%;
+      margin-bottom: 10px;
+      font-weight: bold;
+      color: #007bff;
+      font-size: 1.5rem;
+    }
+
+    .term-boxes {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    .term-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 150px;
+      height: 150px;
+      background-color: #fff;
+      border: 2px solid #007bff;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="split-container">
+    <!-- Left Section -->
+    <div class="left-section">
+      <header>Computer Engineering <br> Course Navigator</header>
+      <a href="https://graphcommons.com/graphs/299f8e67-5689-41b2-b63a-a7ddad145f8d" target="_blank" rel="noopener noreferrer">
+        <button class="cool_button ticketbutton">Course Map</button>
+    </a>            
+      <div class="question">Select courses for each box:</div>
+      <div class="box-container" id="box-container">
+        <!-- Initial dropdowns dynamically added -->
+      </div>
+      <button id="submit-button" onclick="submitSelections()" disabled>Submit</button>
+      <div id="available-courses" class="available-courses">
+        <h3>Unlocked Courses:</h3>
+        <ul id="courses-list"></ul>
+      </div>
+    </div>
+
+    <!-- Right Section -->
+    <div class="right-section" id="term-container">
+      <!-- Study plan terms will dynamically appear here -->
+    </div>
+  </div>
+
+  <script>
+    const selectedCourses = [];
+    const unlockedCourses = new Set(["CPE [ ENGR-UH 1000 (4 Units)]", " Discrete Mathematics[ CS-UH 1002 (4 units)]", "Foundations of Science 1 [ SCIEN-UH (1 unit )]", "Foundations of Science 2 [ SCIEN-UH (1 unit )]", "Calculus with Applications to Science and Engineering [MATH-UH 1012Q (4 untis)]", "Core (CADT-UT)", "Core (CCOL-UH)", "Core (CCEA-UH)", "Core (CDAD-UH)", "Core (CSTS-UH)","FYWS"]); // Initial courses
+    let submissionCount = 0;
+
+    const courseMapping = {
+      "CPE [ ENGR-UH 1000 (4 Units)]": ["Design and Innovation [ ENGR-UH 1021 (2 units)]", "Data Structures and Algorithms [ ENGR-UH 3510 (4 units) ]", "Object-Oriented Programming [ ENGR-UH 2510 (2 units)]"],
+
+      " Discrete Mathematics[ CS-UH 1002 (4 units)]": ["Data Structures and Algorithms [ ENGR-UH 3510 (4 units) ]"],
+
+      "Foundations of Science 1 [ SCIEN-UH (1 unit )]": ["Probability and Statistics for Engineers [ ENGR-UH 2010Q (2 Units) ]", "Conservation Laws in Engineering [ ENGR-UH 2012 (2 Units) ]"],
+
+      "Foundations of Science 2 [ SCIEN-UH (1 unit )]": ["Advanced Topics"],
+
+      "Calculus with Applications to Science and Engineering [MATH-UH 1012Q (4 untis)]": ["Linear Algebra [ MATH-UH 1022Q (4 units)]", "Multivariable Calculus with Applications to Science and Engineering [ MATH-UH 1020Q (4 units)]"],
+
+      "Object-Oriented Programming [ ENGR-UH 2510 (2 units)]": ["Embedded Systems [ ENGR-UH 3530 (4 units)]"],
+
+      "Linear Algebra [ MATH-UH 1022Q (4 units)]": ["Fundamentals of Complex Variables [ ENGR-UH 2610  (2 units)](Elective) ", "Applied Optimization [ ENGR-UH 4230 (4 units)]"],
+
+      "Multivariable Calculus with Applications to Science and Engineering [ MATH-UH 1020Q (4 units)]": ["Complex Variables"],
+
+      "Fundamentals of Ordinary Differential Equations [ MATH-UH 1024Q (2 units)]": ["Numerical Methods [ ENGR-UH 2017 (2 units) ]"],
+
+      "Data Structures and Algorithms [ ENGR-UH 3510 (4 units) ]": ["OS"],
+
+      "Digital Logic [ ENGR-UH 2013 (2 units) ]": ["Advanced Digital Logic [ ENGR-UH 2310 (2 units) ]"],
+
+      "Circuits Fundamentals [ ENGR-UH 2019 (2 units) ]": ["Advanced Circuits [ ENGR-UH 2311 (2 units)]", "Instrumentation, Sensors, Actuators [Elective][ ENGR-UH 3110 (4 units) ]"]
+    };
+
+    function loadDropdowns() {
+      const container = document.getElementById("box-container");
+      container.innerHTML = ""; // Clear dropdowns
+
+      const options = Array.from(unlockedCourses).map(
+        course => `<option value="${course}">${course}</option>`
+      );
+
+      for (let i = 0; i < 4; i++) {
+        const box = document.createElement("div");
+        box.classList.add("box");
+        box.innerHTML = `
+          <div>Box ${i + 1}</div>
+          <select onchange="selectCourse(this, ${i + 1})">
+            <option value="" disabled selected>Select</option>
+            ${options.join("")}
+          </select>
+        `;
+        container.appendChild(box);
+      }
+    }
+
+    function selectCourse(selectElement, boxNumber) {
+      const selectedValue = selectElement.value;
+      selectedCourses[boxNumber - 1] = selectedValue;
+
+      disableSelectedOptions();
+
+      const submitButton = document.getElementById("submit-button");
+      submitButton.disabled = selectedCourses.filter(Boolean).length !== 4;
+    }
+
+    function disableSelectedOptions() {
+      const allDropdowns = document.querySelectorAll("#box-container select");
+      const selectedValues = selectedCourses.filter(Boolean);
+
+      allDropdowns.forEach(dropdown => {
+        const options = dropdown.querySelectorAll("option");
+        options.forEach(option => {
+          option.disabled = selectedValues.includes(option.value) && option.value !== dropdown.value;
+        });
+      });
+    }
+
+    function getYearAndTerm(submissionCount) {
+      const yearMapping = ["Freshman", "Sophomore", "Junior", "Senior"];
+      const yearIndex = Math.floor((submissionCount - 1) / 2); // Determine the year
+      const term = submissionCount % 2 === 1 ? "Fall" : "Spring"; // Determine the term
+      return `${yearMapping[yearIndex]} ${term}`;
+    }
+
+    function submitSelections() {
+      submissionCount++;
+
+      const termContainer = document.getElementById("term-container");
+      const termName = `${getYearAndTerm(submissionCount)}`;
+
+      const newTerm = document.createElement("div");
+      newTerm.classList.add("term-container");
+
+      const termHeader = document.createElement("div");
+      termHeader.classList.add("term-header");
+      termHeader.textContent = termName;
+      newTerm.appendChild(termHeader);
+
+      const termBoxes = document.createElement("div");
+      termBoxes.classList.add("term-boxes");
+      for (let i = 0; i < 4; i++) {
+        const termBox = document.createElement("div");
+        termBox.classList.add("term-box");
+        termBox.textContent = selectedCourses[i] || `${termName} Box ${i + 1}`;
+        termBoxes.appendChild(termBox);
+      }
+
+      newTerm.appendChild(termBoxes);
+      termContainer.appendChild(newTerm);
+
+      // Unlock new courses
+      selectedCourses.forEach(course => {
+        if (courseMapping[course]) {
+          courseMapping[course].forEach(unlocked => unlockedCourses.add(unlocked));
+        }
+      });
+
+      // After second submit, add DL and Cur Fun
+      if (submissionCount === 2) {
+        unlockedCourses.add("Digital Logic [ ENGR-UH 2013 (2 units) ]");
+        unlockedCourses.add("Circuits Fundamentals [ ENGR-UH 2019 (2 units) ]");
+      }
+
+      // Remove selected courses from unlocked list
+      selectedCourses.forEach(course => unlockedCourses.delete(course));
+
+      // Display unlocked courses
+      displayUnlockedCourses();
+
+      // Reset dropdowns for next term
+      resetDropdowns();
+    }
+
+    function displayUnlockedCourses() {
+      const coursesList = document.getElementById("courses-list");
+      coursesList.innerHTML = "";
+
+      unlockedCourses.forEach(course => {
+        const listItem = document.createElement("li");
+        listItem.textContent = course;
+        coursesList.appendChild(listItem);
+      });
+
+      document.getElementById("available-courses").style.display = "block";
+    }
+
+    function resetDropdowns() {
+      loadDropdowns(); // Reload dropdowns with updated unlocked courses
+      selectedCourses.length = 0; // Clear selected courses
+    }
+
+    // Initialize dropdowns on page load
+    window.onload = () => {
+      loadDropdowns();
+    };
+  </script>
+</body>
+</html>
